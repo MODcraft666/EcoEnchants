@@ -1,7 +1,7 @@
 name: EcoEnchants
 version: ${projectVersion}
 main: com.willfp.ecoenchants.EcoEnchantsPlugin
-api-version: 1.16
+api-version: 1.17
 authors: [ Auxilor ]
 website: willfp.com
 load: STARTUP
@@ -9,19 +9,21 @@ depend:
   - eco
   - ProtocolLib
 softdepend:
-  - WorldGuard
-  - GriefPrevention
-  - Towny
-  - FactionsUUID
-  - Lands
-  - Kingdoms
-  - NoCheatPlus
-  - AAC
-  - Matrix
-  - Spartan
   - Essentials
-  - PlaceholderAPI
+  - MythicMobs
+  - AureliumSkills
   - mcMMO
+  - Jobs
+  - Vault
+  - CMI
+  - CMILib
+  - TMMobcoins
+  - EcoBosses
+  - Talismans
+  - EcoArmor
+  - EcoItems
+  - EcoSkills
+  - Boosters
 
 commands:
   enchantinfo:
@@ -37,7 +39,6 @@ permissions:
     default: op
     children:
       ecoenchants.fromtable.*: true
-      ecoenchants.updateannounce: true
       ecoenchants.bypasslevelclamp: true
       ecoenchants.anvil.*: true
       ecoenchants.command.*: true
@@ -60,6 +61,7 @@ permissions:
       ecoenchants.command.giverandombook: true
       ecoenchants.command.locale.*: true
       ecoenchants.command.ecoenchants: true
+      ecoenchants.command.toggledescriptions: true
   ecoenchants.command.locale.*:
     description: Allows managing locale features
     default: op
@@ -71,9 +73,6 @@ permissions:
     description: Allows getting all enchantments from an enchanting table
     default: true
 
-  ecoenchants.updateannounce:
-    description: Informs admins of a new update
-    default: op
   ecoenchants.command.reload:
     description: Allows reloading the config
     default: op
@@ -104,6 +103,9 @@ permissions:
   ecoenchants.command.locale.export:
     description: Allows the use of /ecoenchants locale export to export locales
     default: op
+  ecoenchants.command.toggledescriptions:
+    description: Allows the use of /ecoenchants toggledescriptions
+    default: true
   ecoenchants.command.ecoenchants:
     description: Allows the use of /ecoenchants
     default: true

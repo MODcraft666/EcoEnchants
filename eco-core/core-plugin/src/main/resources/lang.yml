@@ -5,7 +5,7 @@ messages:
   no-permission: "&cYou don't have permission to do this!"
   not-player: "&cThis command must be run by a player"
   invalid-command: "&cUnknown subcommand!"
-  reloaded: "Reloaded!"
+  reloaded: "Reloaded! Took %time%ms"
   got-special: "You got a &dSpecial &fenchantment!"
   skip-added: "&aAdded &flore skip to item!"
   skip-removed: "&cRemoved &flore skip from item!"
@@ -13,6 +13,7 @@ messages:
   not-found: "&cCannot find an enchantment matching name: &f%name%."
   enchantinfo: |
     %name%: &r%description%
+    &9Rarity: &r%rarity%
     &9Max Level: &r%maxlevel%
     &9Can be applied to: &r%target%
     &9Conflicts with: &r%conflicts%
@@ -30,17 +31,25 @@ messages:
   downloaded-locale: "Locale downloaded! Reload config to enact changes."
   invalid-locale: "&cYou must supply a valid locale! Check the wiki for more information."
   specify-locale-subcommand: "&cYou must specify whether to export or download a locale!"
+  enabled-descriptions: "&fYou have successfully &aenabled &fenchantment descriptions!"
+  disabled-descriptions: "&fYou have successfully &cdisabled &fenchantment descriptions!"
+  descriptions-disabled: "&cEnchantment descriptions are disabled on this server."
+  export-failed: "&cExporting the locale failed. Try again later!"
+  cannot-afford-type: "&cYou can't afford to do this! &fCost: &a%cost% %type%"
+  cannot-transmit: "&cYou can't transmit here!"
 
 no-targets: "&cCannot be applied"
 no-conflicts: "&cNo conflicts"
 
+missing-requirements-format: "<strikethrough>"
+
 curse-color: "&c"
 normal-color: "&7"
-special-color: "<gradient:FB57EC>{}</gradient:EF1DEC>&d"
-artifact-color: "<gradient:CAC531>{}</gradient:F3F9A7>&e"
-spell-color: "<gradient:0575E6>{}</gradient:1e3fba>&9"
+special-color: "<gradient:#FB57EC:#EF1DEC>"
+artifact-color: "<gradient:#CAC531:#F3F9A7>"
+spell-color: "<gradient:#0575E6:#1E3FBA>"
 
-above-max-level-color: "<gradient:#1D976C>{}</gradient:#93F9B9>"
+above-max-level-color: "<gradient:#1D976C:#93F9B9>"
 
 description-color: "&8"
 
@@ -198,3 +207,7 @@ enchantments:
   soul_speed:
     name: "Soul Speed"
     description: Increases walking speed on soul sand and soul soil.
+
+  swift_sneak:
+    name: "Swift Sneak"
+    description: Increases speed while sneaking.

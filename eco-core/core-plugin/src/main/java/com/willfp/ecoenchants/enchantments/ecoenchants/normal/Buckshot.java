@@ -1,5 +1,6 @@
 package com.willfp.ecoenchants.enchantments.ecoenchants.normal;
 
+import com.willfp.eco.core.integrations.anticheat.AnticheatManager;
 import com.willfp.eco.util.NumberUtils;
 import com.willfp.ecoenchants.enchantments.EcoEnchant;
 import com.willfp.ecoenchants.enchantments.EcoEnchants;
@@ -28,18 +29,22 @@ public class Buckshot extends EcoEnchant {
                            @NotNull final Arrow arrow,
                            final int level,
                            @NotNull final EntityShootBowEvent event) {
-        event.getProjectile().remove();
-        if (shooter instanceof Player) {
-            ((Player) shooter).playSound(shooter.getLocation(), Sound.ENTITY_ARROW_SHOOT, SoundCategory.PLAYERS, 1.0f, 1.0f);
+        this.getPlugin().getScheduler().runLater(1, () -> event.getProjectile().remove());
+        if (shooter instanceof Player player) {
+            player.playSound(shooter.getLocation(), Sound.ENTITY_ARROW_SHOOT, SoundCategory.PLAYERS, 1.0f, 1.0f);
         }
 
-        int numberPerLevel = this.getConfig().getInt(EcoEnchants.CONFIG_LOCATION + "amount-per-level");
-        int number = numberPerLevel * level;
-        double spread = this.getConfig().getDouble(EcoEnchants.CONFIG_LOCATION + "spread-per-level");
+        int number = this.getConfig().getInt(EcoEnchants.CONFIG_LOCATION + "amount-per-level");
+        number *= level;
+
+        double spread = Math.abs(this.getConfig().getDouble(EcoEnchants.CONFIG_LOCATION + "spread-per-level"));
         spread *= level;
 
-        for (int i = 0; i < number; i += 1) {
+        if (shooter instanceof Player player) {
+            AnticheatManager.exemptPlayer(player);
+        }
 
+        for (int i = 0; i < number; i++) {
             Vector velocity = event.getProjectile().getVelocity().clone();
 
             velocity.add(new Vector(NumberUtils.randFloat(-spread, spread), NumberUtils.randFloat(-spread, spread), NumberUtils.randFloat(-spread, spread)));
@@ -52,6 +57,10 @@ public class Buckshot extends EcoEnchant {
                 arrow1.setGravity(false);
             }
             arrow1.setPickupStatus(AbstractArrow.PickupStatus.DISALLOWED);
+        }
+
+        if (shooter instanceof Player player) {
+            AnticheatManager.unexemptPlayer(player);
         }
     }
 }

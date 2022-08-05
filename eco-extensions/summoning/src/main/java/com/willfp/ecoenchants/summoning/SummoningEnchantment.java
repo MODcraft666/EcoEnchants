@@ -6,17 +6,15 @@ import com.willfp.ecoenchants.enchantments.EcoEnchant;
 import com.willfp.ecoenchants.enchantments.EcoEnchants;
 import com.willfp.ecoenchants.enchantments.meta.EnchantmentType;
 import com.willfp.ecoenchants.enchantments.util.EnchantmentUtils;
+import com.willfp.ecoenchants.enchantments.util.WeakMetadata;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.attribute.Attribute;
-import org.bukkit.entity.Arrow;
-import org.bukkit.entity.EntityType;
-import org.bukkit.entity.LivingEntity;
-import org.bukkit.entity.Mob;
-import org.bukkit.entity.Trident;
+import org.bukkit.entity.*;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
+import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.EntityDeathEvent;
 import org.bukkit.event.entity.EntityTargetEvent;
 import org.jetbrains.annotations.NotNull;
@@ -41,6 +39,11 @@ public abstract class SummoningEnchantment extends EcoEnchant {
                               final int level,
                               @NotNull final EntityDamageByEntityEvent event) {
         if (!summoningType.equals(SummoningType.MELEE)) {
+            return;
+        }
+
+        if (event.getCause() == EntityDamageEvent.DamageCause.ENTITY_SWEEP_ATTACK
+            && this.getConfig().getBool("config.ignore-sweep-attacks")) {
             return;
         }
 
@@ -86,7 +89,7 @@ public abstract class SummoningEnchantment extends EcoEnchant {
             return;
         }
 
-        if (!victim.getMetadata("eco-target").isEmpty()) {
+        if (WeakMetadata.SUMMONED_ENTITY_MEMORY.containsKey(victim) || WeakMetadata.SUMMONED_ENTITY_TARGET.containsKey(victim)) {
             return;
         }
 
@@ -106,24 +109,25 @@ public abstract class SummoningEnchantment extends EcoEnchant {
                 health = entity.getAttribute(Attribute.GENERIC_MAX_HEALTH).getValue();
             }
             entity.setHealth(health);
-            entity.setMetadata("eco-target", this.getPlugin().getMetadataValueFactory().create(victim));
+            WeakMetadata.SUMMONED_ENTITY_MEMORY.put(entity, victim);
+            WeakMetadata.SUMMONED_ENTITY_TARGET.put(victim, null);
             this.getPlugin().getScheduler().runLater(entity::remove, ticksToLive);
         }
     }
 
     @EventHandler
     public void onSwitchTarget(@NotNull final EntityTargetEvent event) {
-        if (event.getEntity().getMetadata("eco-target").isEmpty()) {
+        if (!WeakMetadata.SUMMONED_ENTITY_MEMORY.containsKey(event.getEntity())) {
             return;
         }
 
-        LivingEntity target = (LivingEntity) event.getEntity().getMetadata("eco-target").get(0).value();
+        LivingEntity target = (LivingEntity) WeakMetadata.SUMMONED_ENTITY_MEMORY.get(event.getEntity());
         event.setTarget(target);
     }
 
     @EventHandler(priority = EventPriority.LOW)
     public void onDropItem(@NotNull final EntityDeathEvent event) {
-        if (event.getEntity().getMetadata("eco-target").isEmpty()) {
+        if (!WeakMetadata.SUMMONED_ENTITY_MEMORY.containsKey(event.getEntity())) {
             return;
         }
 

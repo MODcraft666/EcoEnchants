@@ -1,9 +1,10 @@
 package com.willfp.ecoenchants.enchantments.support.obtaining;
 
-import com.google.common.collect.ImmutableSet;
 import com.willfp.eco.core.EcoPlugin;
 import com.willfp.eco.core.PluginDependent;
+import com.willfp.eco.core.config.updating.ConfigUpdater;
 import com.willfp.eco.util.NumberUtils;
+import com.willfp.ecoenchants.EcoEnchantsPlugin;
 import com.willfp.ecoenchants.enchantments.EcoEnchant;
 import com.willfp.ecoenchants.enchantments.EcoEnchants;
 import com.willfp.ecoenchants.enchantments.meta.EnchantmentTarget;
@@ -29,6 +30,8 @@ import org.jetbrains.annotations.NotNull;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -37,17 +40,12 @@ public class EnchantingListeners extends PluginDependent<EcoPlugin> implements L
     /**
      * All players currently enchanting a secondary item.
      */
-    public static final Map<Player, int[]> CURRENTLY_ENCHANTING_SECONDARY = new HashMap<>();
+    private static final Map<Player, int[]> CURRENTLY_ENCHANTING_SECONDARY = new HashMap<>();
+
     /**
      * All enchantments that by default cannot be enchanted in a table but are in EcoEnchants.
      */
-    private static final Set<Material> SECONDARY_ENCHANTABLE = new ImmutableSet.Builder<Material>()
-            .add(Material.ELYTRA)
-            .add(Material.SHIELD)
-            .add(Material.FLINT_AND_STEEL)
-            .add(Material.SHEARS)
-            .add(Material.CARROT_ON_A_STICK)
-            .add(Material.PLAYER_HEAD).build();
+    private static final Set<Material> SECONDARY_ENCHANTABLE = new HashSet<>();
 
     /**
      * Instantiate enchanting listeners and link them to a specific plugin.
@@ -56,6 +54,19 @@ public class EnchantingListeners extends PluginDependent<EcoPlugin> implements L
      */
     public EnchantingListeners(@NotNull final EcoPlugin plugin) {
         super(plugin);
+    }
+
+    /**
+     * Update from config.
+     *
+     * @param plugin Instance of EcoEnchants.
+     */
+    @ConfigUpdater
+    public static void update(@NotNull final EcoEnchantsPlugin plugin) {
+        SECONDARY_ENCHANTABLE.clear();
+        for (String string : plugin.getTargetYml().getStrings("extra-enchantable-items")) {
+            SECONDARY_ENCHANTABLE.add(Material.matchMaterial(string.toUpperCase()));
+        }
     }
 
     /**
@@ -116,7 +127,7 @@ public class EnchantingListeners extends PluginDependent<EcoPlugin> implements L
             multiplier /= this.getPlugin().getConfigYml().getDouble("enchanting-table.reduce-probability.factor");
         }
 
-        ArrayList<EcoEnchant> enchantments = new ArrayList<>(EcoEnchants.values());
+        List<EcoEnchant> enchantments = new ArrayList<>(EcoEnchants.values());
         Collections.shuffle(enchantments); // Prevent list bias towards early enchantments like telekinesis
 
         boolean gotSpecial = false;
@@ -125,10 +136,10 @@ public class EnchantingListeners extends PluginDependent<EcoPlugin> implements L
             if (!enchantment.canEnchantItem(item)) {
                 continue;
             }
-            if (NumberUtils.randFloat(0, 1) > enchantment.getRarity().getTableProbability() * multiplier) {
+            if (NumberUtils.randFloat(0, 1) > enchantment.getEnchantmentRarity().getTableProbability() * multiplier) {
                 continue;
             }
-            if (enchantment.getRarity().getMinimumLevel() > cost) {
+            if (enchantment.getEnchantmentRarity().getMinimumLevel() > cost) {
                 continue;
             }
             if (!enchantment.isEnabled()) {
@@ -172,13 +183,13 @@ public class EnchantingListeners extends PluginDependent<EcoPlugin> implements L
                 level = (int) Math.ceil(enchantlevel2 / enchantlevel3);
             } else {
                 int maxLevel = this.getPlugin().getConfigYml().getInt("enchanting-table.maximum-obtainable-level");
-                double enchantlevel1 = (cost / (double) enchantment.getRarity().getMinimumLevel()) / (maxLevel / (double) enchantment.getRarity().getMinimumLevel());
+                double enchantlevel1 = (cost / (double) enchantment.getEnchantmentRarity().getMinimumLevel()) / (maxLevel / (double) enchantment.getEnchantmentRarity().getMinimumLevel());
                 double enchantlevel2 = NumberUtils.triangularDistribution(0, 1, enchantlevel1);
                 double enchantlevel3 = 1 / maxLevelDouble;
                 level = (int) Math.ceil(enchantlevel2 / enchantlevel3);
             }
 
-            level = NumberUtils.equalIfOver(level, enchantment.getMaxLevel());
+            level = Math.min(level, enchantment.getMaxLevel());
             toAdd.put(enchantment, level);
 
             if (this.getPlugin().getConfigYml().getBool("enchanting-table.cap-amount.enabled") && toAdd.size() >= this.getPlugin().getConfigYml().getInt("enchanting-table.cap-amount.limit")) {
@@ -275,7 +286,7 @@ public class EnchantingListeners extends PluginDependent<EcoPlugin> implements L
         int maxLevel = this.getPlugin().getConfigYml().getInt("enchanting-table.maximum-obtainable-level");
 
         try {
-            event.getOffers()[2].setCost(NumberUtils.equalIfOver(event.getOffers()[2].getCost(), maxLevel));
+            event.getOffers()[2].setCost(Math.min(event.getOffers()[2].getCost(), maxLevel));
         } catch (ArrayIndexOutOfBoundsException | NullPointerException ignored) {
         }
 
@@ -305,7 +316,7 @@ public class EnchantingListeners extends PluginDependent<EcoPlugin> implements L
         midEnchantLevel *= (int) Math.ceil((double) maxLevel / 30);
         topEnchantLevel *= (int) Math.ceil((double) maxLevel / 30);
 
-        bottomEnchantLevel = NumberUtils.equalIfOver(bottomEnchantLevel, maxLevel);
+        bottomEnchantLevel = Math.min(bottomEnchantLevel, maxLevel);
 
         int midUnbreakingLevel = NumberUtils.randInt(1, 3);
         if (midUnbreakingLevel < 2) {

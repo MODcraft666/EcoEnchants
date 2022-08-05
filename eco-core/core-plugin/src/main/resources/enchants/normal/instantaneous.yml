@@ -21,8 +21,17 @@ general-config:
     - hoe
   grindstoneable: true
   disabled-in-worlds: [ ]
+  requirements:
+    list: []
+    not-met-lore: []
   conflicts: [ ]
   maximum-level: 7
 
 config:
   chance-per-level: 3
+  blacklisted-blocks:
+    - BEDROCK
+    - OBSIDIAN
+    - END_PORTAL
+    - END_PORTAL_GATE
+    - NETHER_PORTAL

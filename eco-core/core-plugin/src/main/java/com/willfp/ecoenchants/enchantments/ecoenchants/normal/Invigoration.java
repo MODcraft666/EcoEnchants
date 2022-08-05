@@ -27,6 +27,10 @@ public class Invigoration extends EcoEnchant {
             return;
         }
 
+        if (!this.areRequirementsMet(player)) {
+            return;
+        }
+
         int totalInvigorationPoints = EnchantChecks.getArmorPoints(player, this, 0);
         if (this.getDisabledWorlds().contains(player.getWorld())) {
             return;
@@ -37,13 +41,16 @@ public class Invigoration extends EcoEnchant {
         }
 
         double damageReduction = totalInvigorationPoints * this.getConfig().getDouble(EcoEnchants.CONFIG_LOCATION + "reduction-multiplier") * 0.01;
-        damageReduction += 1;
-        event.setDamage(event.getDamage() * damageReduction);
+        event.setDamage(event.getDamage() * (1 - damageReduction));
     }
 
     @EventHandler
     public void onInvigorationDamage(@NotNull final EntityDamageByEntityEvent event) {
         if (!(event.getDamager() instanceof Player player)) {
+            return;
+        }
+
+        if (!this.areRequirementsMet(player)) {
             return;
         }
 

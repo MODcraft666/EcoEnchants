@@ -2,9 +2,12 @@ package com.willfp.ecoenchants.enchantments.support.merging.grindstone;
 
 import com.willfp.eco.core.EcoPlugin;
 import com.willfp.eco.core.PluginDependent;
+import com.willfp.eco.util.NumberUtils;
+import org.bukkit.Bukkit;
+import org.bukkit.Location;
 import org.bukkit.enchantments.Enchantment;
-import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
+import org.bukkit.entity.ExperienceOrb;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -16,6 +19,8 @@ import org.bukkit.inventory.meta.EnchantmentStorageMeta;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 public class GrindstoneListeners extends PluginDependent<EcoPlugin> implements Listener {
@@ -40,47 +45,62 @@ public class GrindstoneListeners extends PluginDependent<EcoPlugin> implements L
         if (player.getOpenInventory().getTopInventory().getType() != InventoryType.GRINDSTONE) {
             return;
         }
+        if (event.getSlotType() != InventoryType.SlotType.RESULT) {
+            return;
+        }
 
         GrindstoneInventory inventory = (GrindstoneInventory) player.getOpenInventory().getTopInventory();
 
+        ItemStack top = inventory.getItem(0);
+        ItemStack bottom = inventory.getItem(1);
+        ItemStack out = inventory.getItem(2);
+
+        if (out == null) {
+            return;
+        }
+
+        List<Enchantment> removed = new ArrayList<>();
+
+        if (top != null) {
+            removed.addAll(top.getEnchantments().keySet());
+        }
+
+        if (bottom != null) {
+            removed.addAll(bottom.getEnchantments().keySet());
+        }
+
+        Map<Enchantment, Integer> toKeep = GrindstoneMerge.doMerge(top, bottom);
+
+        removed.removeAll(toKeep.keySet());
+
         this.getPlugin().getScheduler().runLater(() -> {
-            ItemStack top = inventory.getItem(0);
-            ItemStack bottom = inventory.getItem(1);
-            ItemStack out = inventory.getItem(2);
-
-            Map<Enchantment, Integer> toKeep = GrindstoneMerge.doMerge(top, bottom);
-
-            if (toKeep.isEmpty()) {
-                inventory.setItem(2, out);
-            }
-            if (out == null) {
+            if (inventory.getItem(2) != null || event.isCancelled()) {
                 return;
             }
 
-            ItemStack newOut = out.clone();
-            if (newOut.getItemMeta() instanceof EnchantmentStorageMeta meta) {
-                toKeep.forEach(((enchantment, integer) -> {
-                    meta.addStoredEnchant(enchantment, integer, true);
-                }));
-                newOut.setItemMeta(meta);
-            } else {
-                ItemMeta meta = newOut.getItemMeta();
-                toKeep.forEach(((enchantment, integer) -> {
-                    meta.addEnchant(enchantment, integer, true);
-                }));
-                newOut.setItemMeta(meta);
+            ItemMeta outMeta = out.getItemMeta();
+
+            if (outMeta == null) {
+                return;
             }
 
-            this.getPlugin().getScheduler().run(() -> {
-                inventory.setItem(2, newOut);
-                if (!toKeep.isEmpty()) {
-                    for (Entity entity : player.getNearbyEntities(10, 10, 10)) {
-                        if (entity.getType() == EntityType.EXPERIENCE_ORB) {
-                            entity.remove();
-                        }
-                    }
-                }
-            });
+            if (outMeta instanceof EnchantmentStorageMeta storageMeta) {
+                toKeep.forEach((enchant, level) -> storageMeta.addStoredEnchant(enchant, level, true));
+                out.setItemMeta(storageMeta);
+            } else {
+                toKeep.forEach((enchant, level) -> outMeta.addEnchant(enchant, level, true));
+                out.setItemMeta(outMeta);
+            }
+
+            if (!removed.isEmpty()) {
+                Location loc = player.getLocation().clone().add(
+                        NumberUtils.randFloat(-1, 1),
+                        NumberUtils.randFloat(-1, 1),
+                        NumberUtils.randFloat(-1, 1)
+                );
+                ExperienceOrb orb = (ExperienceOrb) loc.getWorld().spawnEntity(loc, EntityType.EXPERIENCE_ORB);
+                orb.setExperience(removed.size() * 15);
+            }
         }, 1);
     }
 }

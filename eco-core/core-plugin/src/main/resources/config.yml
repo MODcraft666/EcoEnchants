@@ -35,7 +35,6 @@ lore:
     reformat: true
     numbers-only: true # If only the numbers should be reformatted
 
-
   sort-by-type: false # Sort enchantments by type
   sort-by-length: false # Sort enchantments by length
   sort-by-rarity: false # Sort enchantments by rarity.
@@ -64,6 +63,7 @@ lore:
     before-lines: 5 # Describe before or equal to number of enchantments
     wrap: 30 # Word wrap after number of characters
     at-bottom: false # If descriptions should be shown after all enchantments rather than under each one
+    only-on-books: false # If descriptions should only be shown on books
 
   # Ensure that describe and shrink have no overlap as this may cause errors
 
@@ -71,6 +71,10 @@ lore:
     enabled: true
     after-lines: 9 # Collapse after number of enchantments
     maximum-per-line: 2 # Maximum number of enchantments to have in 1 line
+
+  prefix: [] # Lines used above the enchantments
+  suffix: [] # Lines used below the enchantments
+  prefix-on-books: false # If the prefix/suffix should work on books as well as items
 
 enchanting-table:
   enabled: true # Enable EcoEnchants through an enchanting table
@@ -122,6 +126,45 @@ rarity:
   vanilla-rarity: uncommon # Vanilla enchantments do not have an EcoEnchants rarity - what rarity should they have?
   vanilla-treasure-rarity: legendary # Treasure enchantments do not appear in vanilla enchanting tables (Mending, Soul Speed, Frost Walker)
   # The above options *do not* affect actual enchantment rarities. They are purely for cosmetic purposes, like in item lores.
+
+use-faster-move-trigger: true # Disable if you want move trigger to detect sub-1-block movements
+raytrace-distance: 80 # The distance that alt_click should check for a location
+block-item-drop-place-check: true # If the block_item_drop trigger should only fire on naturally placed blocks (prevents dupes)
+
+cooldown: # For custom enchantments
+  in-actionbar: true
+  sound:
+    enabled: true
+    sound: "BLOCK_NOTE_BLOCK_PLING"
+    pitch: 0.5
+
+cannot-afford: # For custom enchantments
+  in-actionbar: true
+  sound:
+    enabled: true
+    sound: "BLOCK_NOTE_BLOCK_PLING"
+    pitch: 0.5
+
+cannot-afford-type:
+  in-actionbar: true
+  sound:
+    enabled: true
+    sound: "BLOCK_NOTE_BLOCK_PLING"
+    pitch: 0.5
+
+point-names: # If you have point names that look ugly (eg g_souls) then you can map them to nice names to be shown to players.
+  example_point: "Nicely Formatted Point"
+
+potions:
+  icon:
+    permanent: true
+    triggered: true
+  ambient:
+    permanent: false
+    triggered: true
+  particles:
+    permanent: false
+    triggered: true
 
 advanced:
   force-dropqueue: true

@@ -3,6 +3,7 @@ plugins {
     id 'com.github.johnrengelman.shadow' version '7.0.0'
     id 'maven-publish'
     id 'java'
+    id 'checkstyle'
 }
 
 dependencies {
@@ -24,6 +25,7 @@ allprojects {
         maven { url "https://oss.sonatype.org/content/repositories/snapshots" }
         maven { url 'https://oss.sonatype.org/content/groups/public/' }
         maven { url 'https://maven.enginehub.org/repo/' }
+        maven { url 'https://repo.essentialsx.net/releases/' }
         maven { url 'https://ci.ender.zone/plugin/repository/project/' }
         maven { url 'https://ci.ender.zone/plugin/repository/everything/' }
         maven { url 'https://repo.md-5.net/content/repositories/snapshots/' }
@@ -35,12 +37,18 @@ allprojects {
         maven { url 'https://repo.spongepowered.org/maven/' }
         maven { url 'https://org.kitteh.pastegg' }
         maven { url 'https://repo.mikeprimm.com/' }
-        maven { url 'https://maven.sk89q.com/repo/' }
+        maven { url 'https://maven.enginehub.org/repo/' }
         maven { url 'https://github.com/factions-site/repo/raw/public/' }
+        maven { url 'https://mvn.lumine.io/repository/maven-public/' }
     }
 
     jar {
         onlyIf { !sourceSets.main.allSource.files.isEmpty() }
+    }
+
+    shadowJar {
+        relocate('com.willfp.libreforge', 'com.willfp.ecoenchants.libreforge')
+        relocate('org.joml', 'com.willfp.ecoenchants.libreforge.joml')
     }
 
     compileJava {
@@ -48,15 +56,15 @@ allprojects {
     }
 
     dependencies {
-        compileOnly 'com.willfp:eco:6.3.0'
+        compileOnly 'com.willfp:eco:6.37.2'
 
-        compileOnly 'org.jetbrains:annotations:19.0.0'
+        compileOnly 'org.jetbrains:annotations:22.0.0'
 
-        compileOnly 'org.projectlombok:lombok:1.18.20'
-        annotationProcessor 'org.projectlombok:lombok:1.18.20'
+        compileOnly 'org.projectlombok:lombok:1.18.22'
+        annotationProcessor 'org.projectlombok:lombok:1.18.22'
 
-        testCompileOnly 'org.projectlombok:lombok:1.18.20'
-        testAnnotationProcessor 'org.projectlombok:lombok:1.18.20'
+        testCompileOnly 'org.projectlombok:lombok:1.18.22'
+        testAnnotationProcessor 'org.projectlombok:lombok:1.18.22'
     }
 
     tasks.withType(JavaCompile) {
@@ -70,10 +78,14 @@ allprojects {
         }
     }
 
+    java.sourceCompatibility = JavaVersion.VERSION_17
+    java.targetCompatibility = JavaVersion.VERSION_17
+
     compileJava.options.encoding = 'UTF-8'
     compileJava.dependsOn clean
 
     build.dependsOn shadowJar
+    build.dependsOn check
 }
 
 tasks.withType(Jar) {
@@ -95,7 +107,6 @@ jar {
 group = 'com.willfp'
 archivesBaseName = project.name
 version = findProperty("version")
-java.sourceCompatibility = JavaVersion.VERSION_16
 
 compileJava.options.encoding = 'UTF-8'
 
@@ -106,3 +117,15 @@ publishing {
         }
     }
 }
+
+task buyThePlugins {
+    dependsOn subprojects.build
+
+    doLast {
+        println 'If you like the plugin, please consider buying it on Spigot or Polymart!'
+        println 'Spigot: https://www.spigotmc.org/resources/authors/auxilor.507394/'
+        println 'Polymart: https://polymart.org/user/auxilor.1107/'
+        println 'Buying gives you access to support and the plugin auto-updater, and it allows me to keep developing plugins.'
+    }
+}
+build.finalizedBy buyThePlugins

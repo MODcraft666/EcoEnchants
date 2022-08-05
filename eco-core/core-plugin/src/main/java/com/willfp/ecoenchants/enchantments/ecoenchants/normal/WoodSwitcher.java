@@ -50,7 +50,7 @@ public class WoodSwitcher extends EcoEnchant {
         double random = NumberUtils.randFloat(0, 1);
         double band = 1 / (double) this.getConfig().getStrings(EcoEnchants.CONFIG_LOCATION + "blocks").size();
         int selectedIndex = (int) Math.floor(random / band);
-        selectedIndex = NumberUtils.equalIfOver(selectedIndex, this.getConfig().getStrings(EcoEnchants.CONFIG_LOCATION + "blocks").size() - 1);
+        selectedIndex = Math.min(selectedIndex, this.getConfig().getStrings(EcoEnchants.CONFIG_LOCATION + "blocks").size() - 1);
         String materialName = this.getConfig().getStrings(EcoEnchants.CONFIG_LOCATION + "blocks").get(selectedIndex);
         material = Material.getMaterial(materialName.toUpperCase());
 

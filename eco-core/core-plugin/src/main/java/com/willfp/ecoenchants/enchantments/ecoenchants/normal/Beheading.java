@@ -1,7 +1,9 @@
 package com.willfp.ecoenchants.enchantments.ecoenchants.normal;
 
 import com.willfp.eco.core.drops.DropQueue;
+import com.willfp.eco.core.items.builder.SkullBuilder;
 import com.willfp.ecoenchants.enchantments.EcoEnchant;
+import com.willfp.ecoenchants.enchantments.EcoEnchants;
 import com.willfp.ecoenchants.enchantments.meta.EnchantmentType;
 import com.willfp.ecoenchants.enchantments.util.EnchantChecks;
 import com.willfp.ecoenchants.enchantments.util.EnchantmentUtils;
@@ -35,6 +37,10 @@ public class Beheading extends EcoEnchant {
 
         Player player = event.getEntity().getKiller();
 
+        if (!this.areRequirementsMet(player)) {
+            return;
+        }
+
         LivingEntity victim = event.getEntity();
 
         if (!EnchantChecks.mainhand(player, this)) {
@@ -60,16 +66,19 @@ public class Beheading extends EcoEnchant {
             meta.setOwningPlayer((Player) victim);
             item.setItemMeta(meta);
         } else {
-            if (event.getEntityType().equals(EntityType.ZOMBIE)) {
-                item = new ItemStack(Material.ZOMBIE_HEAD, 1);
-            } else if (event.getEntityType().equals(EntityType.SKELETON)) {
-                item = new ItemStack(Material.SKELETON_SKULL, 1);
-            } else if (event.getEntityType().equals(EntityType.CREEPER)) {
-                item = new ItemStack(Material.CREEPER_HEAD, 1);
-            } else if (event.getEntityType().equals(EntityType.ENDER_DRAGON)) {
-                item = new ItemStack(Material.DRAGON_HEAD, 1);
-            } else {
-                return;
+            item = getHead(event.getEntityType());
+            if (item == null) {
+                if (event.getEntityType().equals(EntityType.ZOMBIE)) {
+                    item = new ItemStack(Material.ZOMBIE_HEAD, 1);
+                } else if (event.getEntityType().equals(EntityType.SKELETON)) {
+                    item = new ItemStack(Material.SKELETON_SKULL, 1);
+                } else if (event.getEntityType().equals(EntityType.CREEPER)) {
+                    item = new ItemStack(Material.CREEPER_HEAD, 1);
+                } else if (event.getEntityType().equals(EntityType.ENDER_DRAGON)) {
+                    item = new ItemStack(Material.DRAGON_HEAD, 1);
+                } else {
+                    return;
+                }
             }
         }
 
@@ -80,5 +89,21 @@ public class Beheading extends EcoEnchant {
                 .push();
 
         event.setDroppedExp(0);
+    }
+
+    private ItemStack getHead(@NotNull final EntityType type) {
+        for (String s : this.getConfig().getStrings(EcoEnchants.CONFIG_LOCATION + "custom-heads")) {
+            String[] split = s.split("::");
+            if (type.name().equalsIgnoreCase(split[0])) {
+                SkullBuilder builder = new SkullBuilder().setSkullTexture(split[1]);
+
+                if (split.length >= 3) {
+                    builder.setDisplayName(split[2]);
+                }
+
+                return builder.build();
+            }
+        }
+        return null;
     }
 }

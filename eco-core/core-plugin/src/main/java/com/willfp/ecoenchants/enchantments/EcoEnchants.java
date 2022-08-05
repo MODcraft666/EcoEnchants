@@ -3,8 +3,11 @@ package com.willfp.ecoenchants.enchantments;
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
 import com.google.common.collect.ImmutableList;
+import com.willfp.eco.core.config.interfaces.Config;
 import com.willfp.eco.core.config.updating.ConfigUpdater;
+import com.willfp.eco.core.fast.FastItemStack;
 import com.willfp.ecoenchants.EcoEnchantsPlugin;
+import com.willfp.ecoenchants.enchantments.custom.CustomEcoEnchants;
 import com.willfp.ecoenchants.enchantments.ecoenchants.artifact.AngerArtifact;
 import com.willfp.ecoenchants.enchantments.ecoenchants.artifact.AshArtifact;
 import com.willfp.ecoenchants.enchantments.ecoenchants.artifact.CloudsArtifact;
@@ -22,7 +25,6 @@ import com.willfp.ecoenchants.enchantments.ecoenchants.artifact.HeartArtifact;
 import com.willfp.ecoenchants.enchantments.ecoenchants.artifact.HoneyArtifact;
 import com.willfp.ecoenchants.enchantments.ecoenchants.artifact.InkArtifact;
 import com.willfp.ecoenchants.enchantments.ecoenchants.artifact.LavaArtifact;
-import com.willfp.ecoenchants.enchantments.ecoenchants.artifact.LightArtifact;
 import com.willfp.ecoenchants.enchantments.ecoenchants.artifact.LimeArtifact;
 import com.willfp.ecoenchants.enchantments.ecoenchants.artifact.MagicArtifact;
 import com.willfp.ecoenchants.enchantments.ecoenchants.artifact.MagmaArtifact;
@@ -91,6 +93,7 @@ import com.willfp.ecoenchants.enchantments.ecoenchants.normal.Disable;
 import com.willfp.ecoenchants.enchantments.ecoenchants.normal.Disappear;
 import com.willfp.ecoenchants.enchantments.ecoenchants.normal.Diurnal;
 import com.willfp.ecoenchants.enchantments.ecoenchants.normal.Diverse;
+import com.willfp.ecoenchants.enchantments.ecoenchants.normal.Dousing;
 import com.willfp.ecoenchants.enchantments.ecoenchants.normal.Drill;
 import com.willfp.ecoenchants.enchantments.ecoenchants.normal.Dullness;
 import com.willfp.ecoenchants.enchantments.ecoenchants.normal.Dweller;
@@ -244,16 +247,16 @@ import com.willfp.ecoenchants.enchantments.ecoenchants.spell.Quake;
 import com.willfp.ecoenchants.enchantments.ecoenchants.spell.Vitalize;
 import com.willfp.ecoenchants.enchantments.meta.EnchantmentType;
 import com.willfp.ecoenchants.enchantments.support.vanilla.VanillaEnchantments;
+import com.willfp.ecoenchants.integrations.registration.RegistrationManager;
+import com.willfp.libreforge.chains.EffectChains;
 import lombok.experimental.UtilityClass;
 import org.bukkit.NamespacedKey;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.meta.EnchantmentStorageMeta;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 @UtilityClass
 @SuppressWarnings({"unused", "checkstyle:JavadocVariable"})
@@ -496,12 +499,12 @@ public class EcoEnchants {
     public static final EcoEnchant REBOUNDING = new Rebounding();
     public static final EcoEnchant COPPER_ARTIFACT = new CopperArtifact();
     public static final EcoEnchant GLOW_ARTIFACT = new GlowArtifact();
-    public static final EcoEnchant LIGHT_ARTIFACT = new LightArtifact();
     public static final EcoEnchant SPARK_ARTIFACT = new SparkArtifact();
     public static final EcoEnchant SPORE_ARTIFACT = new SporeArtifact();
     public static final EcoEnchant WAX_ARTIFACT = new WaxArtifact();
     public static final EcoEnchant RAIN_ARTIFACT = new RainArtifact();
     public static final EcoEnchant SLIME_ARTIFACT = new SlimeArtifact();
+    public static final EcoEnchant DOUSING = new Dousing();
 
     /**
      * Get all registered {@link EcoEnchant}s.
@@ -552,22 +555,11 @@ public class EcoEnchants {
      */
     public static boolean hasAnyOfType(@NotNull final ItemStack item,
                                        @NotNull final EnchantmentType type) {
-        AtomicBoolean hasOfType = new AtomicBoolean(false);
-
-        if (item.getItemMeta() instanceof EnchantmentStorageMeta) {
-            ((EnchantmentStorageMeta) item.getItemMeta()).getStoredEnchants().forEach(((enchantment, integer) -> {
-                if (enchantment instanceof EcoEnchant ecoEnchant && ecoEnchant.getType().equals(type)) {
-                    hasOfType.set(true);
-                }
-            }));
-        } else {
-            item.getEnchantments().forEach((enchantment, integer) -> {
-                if (enchantment instanceof EcoEnchant ecoEnchant && ecoEnchant.getType().equals(type)) {
-                    hasOfType.set(true);
-                }
-            });
-        }
-        return hasOfType.get();
+        return FastItemStack.wrap(item).getEnchants(true).keySet()
+                .stream()
+                .filter(enchantment -> enchantment instanceof EcoEnchant)
+                .map(enchantment -> (EcoEnchant) enchantment)
+                .anyMatch(ecoEnchant -> ecoEnchant.getType().equals(type));
     }
 
     /**
@@ -577,11 +569,18 @@ public class EcoEnchants {
      */
     @ConfigUpdater
     public static void update(@NotNull final EcoEnchantsPlugin plugin) {
+        for (Config config : plugin.getCustomEnchantsYml().getSubsections("chains")) {
+            EffectChains.compile(config, "Custom Enchant Chains");
+        }
+
+        CustomEcoEnchants.update(plugin);
+
         for (EcoEnchant ecoEnchant : new HashSet<>(values())) {
             ecoEnchant.update();
         }
 
         VanillaEnchantments.update(plugin);
+        RegistrationManager.registerEnchantments();
     }
 
     /**

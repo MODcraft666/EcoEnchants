@@ -18,6 +18,9 @@ general-config:
     - boots
   grindstoneable: true
   disabled-in-worlds: [ ]
+  requirements:
+    list: []
+    not-met-lore: []
   conflicts: [ ]
   maximum-level: 4
 
@@ -25,3 +28,4 @@ config:
   initial-distance: 2.5 # Initial item pickup range
   bonus-per-level: 0.6 # Bonus range per level (Level 1 also includes bonus)
   repeat-ticks: 3 # Check magnetic every few ticks. Lower values give smoother animations and feels better to the end user, however may cause lag on lower-end hardware.
+  disable-while-sneaking: true

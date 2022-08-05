@@ -18,8 +18,12 @@ general-config:
     - boots
   grindstoneable: true
   disabled-in-worlds: [ ]
+  requirements:
+    list: []
+    not-met-lore: []
   conflicts: [ ]
   maximum-level: 3
 
 config:
+  disable-on-sneak: false
 # No config is available for this enchantment

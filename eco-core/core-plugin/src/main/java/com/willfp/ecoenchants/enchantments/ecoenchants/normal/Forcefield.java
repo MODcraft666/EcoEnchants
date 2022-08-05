@@ -7,6 +7,7 @@ import com.willfp.ecoenchants.enchantments.EcoEnchants;
 import com.willfp.ecoenchants.enchantments.meta.EnchantmentType;
 import com.willfp.ecoenchants.enchantments.util.EnchantChecks;
 import com.willfp.ecoenchants.enchantments.util.TimedRunnable;
+import org.bukkit.entity.Endermite;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Monster;
 import org.bukkit.entity.Player;
@@ -51,7 +52,9 @@ public class Forcefield extends EcoEnchant implements TimedRunnable {
             for (Player player : this.getPlugin().getServer().getOnlinePlayers()) {
                 int level = EnchantChecks.getArmorPoints(player, this, 0);
                 if (level > 0) {
-                    players.put(player, level);
+                    if (this.areRequirementsMet(player)) {
+                        players.put(player, level);
+                    }
                 }
             }
         }, 1);
@@ -71,6 +74,14 @@ public class Forcefield extends EcoEnchant implements TimedRunnable {
 
             for (Entity e : player.getWorld().getNearbyEntities(player.getLocation(), distance, 2.0d, distance)) {
                 if (!(e instanceof Monster)) {
+                    continue;
+                }
+
+                if (e instanceof Endermite) {
+                    continue;
+                }
+
+                if (e.getCustomName() != null || e.isCustomNameVisible()) {
                     continue;
                 }
 

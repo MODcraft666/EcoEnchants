@@ -2,6 +2,7 @@ package com.willfp.ecoenchants.display.options;
 
 import com.willfp.eco.core.EcoPlugin;
 import com.willfp.eco.core.PluginDependent;
+import com.willfp.eco.core.display.Display;
 import com.willfp.ecoenchants.display.options.sorting.EnchantmentSorter;
 import com.willfp.ecoenchants.display.options.sorting.SortParameters;
 import com.willfp.ecoenchants.display.options.sorting.SorterManager;
@@ -40,6 +41,11 @@ public class DisplayOptions extends PluginDependent<EcoPlugin> {
     @Getter
     private final MaxLevelOptions maxLevelOptions = new MaxLevelOptions(this.getPlugin());
     /**
+     * The requirements options being used.
+     */
+    @Getter
+    private final RequirementsOptions requirementsOptions = new RequirementsOptions(this.getPlugin());
+    /**
      * The enchantment types, sorted according to config.
      */
     @Getter
@@ -68,6 +74,24 @@ public class DisplayOptions extends PluginDependent<EcoPlugin> {
     private boolean aboveLore = true;
 
     /**
+     * Lore prefix (above enchantments).
+     */
+    @Getter
+    private List<String> lorePrefix;
+
+    /**
+     * Lore suffix (below enchantments).
+     */
+    @Getter
+    private List<String> loreSuffix;
+
+    /**
+     * If prefix/suffix should show on books.
+     */
+    @Getter
+    private boolean prefixOnBooks;
+
+    /**
      * Instantiate new display options.
      *
      * @param plugin EcoEnchants.
@@ -86,23 +110,26 @@ public class DisplayOptions extends PluginDependent<EcoPlugin> {
         numbersOptions.update();
         shrinkOptions.update();
         maxLevelOptions.update();
+        requirementsOptions.update();
 
         sortedTypes.clear();
         sortedTypes.addAll(this.getPlugin().getConfigYml().getStrings("lore.type-ordering").stream()
                 .map(typeName -> EnchantmentType.values().stream().filter(type -> type.getName().equalsIgnoreCase(typeName)).findFirst().orElse(null))
-                .filter(Objects::nonNull)
-                .collect(Collectors.toList()));
-        sortedTypes.addAll(EnchantmentType.values().stream().filter(enchantmentType -> !sortedTypes.contains(enchantmentType)).collect(Collectors.toList()));
+                .filter(Objects::nonNull).toList());
+        sortedTypes.addAll(EnchantmentType.values().stream().filter(enchantmentType -> !sortedTypes.contains(enchantmentType)).toList());
 
         sortedRarities.clear();
         sortedRarities.addAll(this.getPlugin().getConfigYml().getStrings("lore.rarity-ordering").stream()
                 .map(rarityName -> EnchantmentRarity.values().stream().filter(rarity -> rarity.getName().equalsIgnoreCase(rarityName)).findFirst().orElse(null))
-                .filter(Objects::nonNull)
-                .collect(Collectors.toList()));
-        sortedRarities.addAll(EnchantmentRarity.values().stream().filter(enchantmentRarity -> !sortedRarities.contains(enchantmentRarity)).collect(Collectors.toList()));
+                .filter(Objects::nonNull).toList());
+        sortedRarities.addAll(EnchantmentRarity.values().stream().filter(enchantmentRarity -> !sortedRarities.contains(enchantmentRarity)).toList());
 
         requireTarget = this.getPlugin().getConfigYml().getBool("lore.require-target");
         aboveLore = this.getPlugin().getConfigYml().getBool("lore.above-other-lore");
+
+        lorePrefix = this.getPlugin().getConfigYml().getFormattedStrings("lore.prefix").stream().map(s -> Display.PREFIX + s).collect(Collectors.toList());
+        loreSuffix = this.getPlugin().getConfigYml().getFormattedStrings("lore.suffix").stream().map(s -> Display.PREFIX + s).collect(Collectors.toList());
+        prefixOnBooks = this.getPlugin().getConfigYml().getBool("lore.prefix-on-books");
 
         boolean byType = this.getPlugin().getConfigYml().getBool("lore.sort-by-type");
         boolean byLength = this.getPlugin().getConfigYml().getBool("lore.sort-by-length");

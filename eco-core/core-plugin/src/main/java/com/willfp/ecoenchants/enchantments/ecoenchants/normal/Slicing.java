@@ -32,6 +32,10 @@ public class Slicing extends EcoEnchant {
             return;
         }
 
+        if (!this.areRequirementsMet(player)) {
+            return;
+        }
+
         if (!EnchantChecks.chestplate(player, this)) {
             return;
         }
@@ -59,7 +63,7 @@ public class Slicing extends EcoEnchant {
 
             Bukkit.getServer().getScheduler().runTaskLater(this.getPlugin(), () -> entities.remove(victim), this.getConfig().getInt(EcoEnchants.CONFIG_LOCATION + "cooldown"));
             if (this.getConfig().getBool(EcoEnchants.CONFIG_LOCATION + "damage-elytra")) {
-                DurabilityUtils.damageItem(player, player.getInventory().getChestplate(), 1, 38);
+                DurabilityUtils.damageItem(player, player.getInventory().getChestplate(), 1);
             }
         }
     }

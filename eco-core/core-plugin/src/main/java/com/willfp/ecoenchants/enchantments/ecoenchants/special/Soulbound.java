@@ -5,7 +5,7 @@ import com.willfp.ecoenchants.enchantments.EcoEnchants;
 import com.willfp.ecoenchants.enchantments.meta.EnchantmentType;
 import com.willfp.ecoenchants.enchantments.util.EnchantChecks;
 import com.willfp.ecoenchants.enchantments.util.EnchantmentUtils;
-import org.bukkit.Material;
+import org.bukkit.NamespacedKey;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -17,6 +17,7 @@ import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.persistence.PersistentDataContainer;
 import org.bukkit.persistence.PersistentDataType;
 import org.jetbrains.annotations.NotNull;
+import org.bukkit.entity.Arrow;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -42,13 +43,19 @@ public class Soulbound extends EcoEnchant {
             return;
         }
 
-        if (player.getKiller() != null) {
-            Player killer = player.getKiller();
-            int reaperLevel = EnchantChecks.getMainhandLevel(killer, EcoEnchants.REAPER);
-            if (reaperLevel > 0) {
-                if (!(EcoEnchants.REAPER.getDisabledWorlds().contains(killer.getWorld()))) {
-                    if (EnchantmentUtils.passedChance(EcoEnchants.REAPER, reaperLevel)) {
-                        return;
+        if (!this.areRequirementsMet(player)) {
+            return;
+        }
+
+        if (!(event.getEntity() instanceof Arrow)) {
+            if (player.getKiller() != null) {
+                Player killer = player.getKiller();
+                int reaperLevel = EnchantChecks.getMainhandLevel(killer, EcoEnchants.REAPER);
+                if (reaperLevel > 0) {
+                    if (!(EcoEnchants.REAPER.getDisabledWorlds().contains(killer.getWorld()))) {
+                        if (EnchantmentUtils.passedChance(EcoEnchants.REAPER, reaperLevel)) {
+                            return;
+                        }
                     }
                 }
             }
@@ -93,9 +100,10 @@ public class Soulbound extends EcoEnchant {
         player.setMetadata("soulbound-items", this.getPlugin().getMetadataValueFactory().create(soulboundItems));
     }
 
-    public boolean hasEmptyInventory(@NotNull final Player player) {
+    public boolean hasSoulboundItems(@NotNull final Player player) {
+        final NamespacedKey soulbound = this.getPlugin().getNamespacedKeyFactory().create("soulbound");
         for (ItemStack itemStack : player.getInventory().getContents()) {
-            if (itemStack != null && itemStack.getType() != Material.AIR) {
+            if (itemStack != null && itemStack.getItemMeta().getPersistentDataContainer().has(soulbound, PersistentDataType.INTEGER)) {
                 return false;
             }
         }
@@ -106,8 +114,8 @@ public class Soulbound extends EcoEnchant {
     public void onSoulboundRespawn(@NotNull final PlayerRespawnEvent event) {
         Player player = event.getPlayer();
 
-        this.getPlugin().getScheduler().runLater(() -> {
-            if (!hasEmptyInventory(player)) {
+        this.getPlugin().getScheduler().run(() -> {
+            if (!hasSoulboundItems(player)) {
                 return;
             }
 
@@ -133,11 +141,12 @@ public class Soulbound extends EcoEnchant {
             }
 
             player.removeMetadata("soulbound-items", this.getPlugin());
-        }, 1);
+        });
     }
 
     @EventHandler(priority = EventPriority.HIGHEST)
     public void onDeath(@NotNull final PlayerDeathEvent event) {
-        event.getDrops().removeIf(itemStack -> itemStack.getItemMeta().getPersistentDataContainer().has(this.getPlugin().getNamespacedKeyFactory().create("soulbound"), PersistentDataType.INTEGER));
+        final NamespacedKey soulbound = this.getPlugin().getNamespacedKeyFactory().create("soulbound");
+        event.getDrops().removeIf(itemStack -> itemStack.getItemMeta().getPersistentDataContainer().has(soulbound, PersistentDataType.INTEGER));
     }
 }

@@ -8,6 +8,7 @@ import com.willfp.ecoenchants.enchantments.EcoEnchant;
 import com.willfp.ecoenchants.enchantments.EcoEnchants;
 import com.willfp.ecoenchants.enchantments.meta.EnchantmentType;
 import com.willfp.ecoenchants.enchantments.util.EnchantChecks;
+import com.willfp.ecoenchants.integrations.mythicmobs.MythicMobsManager;
 import org.bukkit.GameMode;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
@@ -28,6 +29,7 @@ import org.jetbrains.annotations.NotNull;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Objects;
 
 public class Telekinesis extends EcoEnchant {
     private static boolean always = false;
@@ -48,7 +50,7 @@ public class Telekinesis extends EcoEnchant {
     public void telekinesisDropItem(@NotNull final BlockDropItemEvent event) {
         Player player = event.getPlayer();
 
-        if (!always && !EnchantChecks.mainhand(player, this)) {
+        if (!always && !(EnchantChecks.mainhand(player, this)) && this.areRequirementsMet(player)) {
             return;
         }
 
@@ -94,7 +96,7 @@ public class Telekinesis extends EcoEnchant {
         Player player = event.getPlayer();
         Block block = event.getBlock();
 
-        if (!always && !EnchantChecks.mainhand(player, this)) {
+        if (!always && !(EnchantChecks.mainhand(player, this)) && this.areRequirementsMet(player)) {
             return;
         }
 
@@ -141,6 +143,10 @@ public class Telekinesis extends EcoEnchant {
             return;
         }
 
+        if (!MythicMobsManager.canDropItems(entity)) {
+            return;
+        }
+
         if (event.getKiller() instanceof Player) {
             player = (Player) event.getKiller();
             item = player.getInventory().getItemInMainHand();
@@ -156,7 +162,12 @@ public class Telekinesis extends EcoEnchant {
             }
         }
 
+        //noinspection ConstantConditions
         if (player == null || item == null) {
+            return;
+        }
+
+        if (Objects.equals(player, entity)) {
             return;
         }
 
@@ -179,6 +190,7 @@ public class Telekinesis extends EcoEnchant {
             if (meta == null) {
                 return false;
             }
+            //noinspection ConstantConditions
             if (meta.getPersistentDataContainer() == null) {
                 return false;
             }

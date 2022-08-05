@@ -19,9 +19,13 @@ general-config:
     - crossbow
   grindstoneable: true
   disabled-in-worlds: [ ]
+  requirements:
+    list: []
+    not-met-lore: []
   conflicts: [ ]
   maximum-level: 6
 
 config:
+  local-lightning-sound: false # Should be lightning sound played locally
   chance-per-level: 1
   lightning-damage: 2.5

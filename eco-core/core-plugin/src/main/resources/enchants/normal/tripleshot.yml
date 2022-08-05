@@ -18,10 +18,15 @@ general-config:
     - bow
   grindstoneable: true
   disabled-in-worlds: [ ]
+  requirements:
+    list: []
+    not-met-lore: []
   conflicts:
     - succession
     - pentashot
     - buckshot
+  maximum-level: 1
 
 config:
+  chance-per-level: 100 # Not chance-based by default
   angle: 11

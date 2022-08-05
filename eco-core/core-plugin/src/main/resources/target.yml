@@ -1,5 +1,14 @@
+extra-enchantable-items:
+  - elytra
+  - shield
+  - flint_and_steel
+  - shears
+  - carrot_on_a_stick
+  - player_head
+
 targets:
   axe:
+    - slot:hands
     - wooden_axe
     - stone_axe
     - iron_axe
@@ -12,6 +21,7 @@ targets:
     - enchanted_book
 
   pickaxe:
+    - slot:hands
     - wooden_pickaxe
     - stone_pickaxe
     - iron_pickaxe
@@ -20,6 +30,7 @@ targets:
     - netherite_pickaxe
 
   hoe:
+    - slot:hands
     - wooden_hoe
     - stone_hoe
     - iron_hoe
@@ -28,6 +39,7 @@ targets:
     - netherite_hoe
 
   shovel:
+    - slot:hands
     - wooden_shovel
     - stone_shovel
     - iron_shovel
@@ -36,6 +48,7 @@ targets:
     - netherite_shovel
 
   sword:
+    - slot:hands
     - wooden_sword
     - stone_sword
     - iron_sword
@@ -44,6 +57,7 @@ targets:
     - netherite_sword
 
   helmet:
+    - slot:armor
     - turtle_helmet
     - leather_helmet
     - chainmail_helmet
@@ -53,6 +67,7 @@ targets:
     - netherite_helmet
 
   chestplate:
+    - slot:armor
     - leather_chestplate
     - chainmail_chestplate
     - iron_chestplate
@@ -61,6 +76,7 @@ targets:
     - netherite_chestplate
 
   leggings:
+    - slot:armor
     - leather_leggings
     - chainmail_leggings
     - iron_leggings
@@ -69,6 +85,7 @@ targets:
     - netherite_leggings
 
   boots:
+    - slot:armor
     - leather_boots
     - chainmail_boots
     - iron_boots
@@ -77,28 +94,37 @@ targets:
     - netherite_boots
 
   elytra:
+    - slot:armor
     - elytra
 
   bow:
+    - slot:hands
     - bow
 
   crossbow:
+    - slot:hands
     - crossbow
 
   shears:
+    - slot:hands
     - shears
 
   trident:
+    - slot:hands
     - trident
 
   shield:
+    - slot:hands
     - shield
 
   rod:
+    - slot:hands
     - fishing_rod
 
   flintandsteel:
+    - slot:hands
     - flint_and_steel
 
   carrot_stick:
+    - slot:hands
     - carrot_on_a_stick

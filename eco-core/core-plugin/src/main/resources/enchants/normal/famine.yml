@@ -18,9 +18,14 @@ general-config:
     - sword
   grindstoneable: true
   disabled-in-worlds: [ ]
+  requirements:
+    list: []
+    not-met-lore: []
   conflicts: [ ]
   maximum-level: 8
 
 config:
   allow-not-fully-charged: false
   chance-per-level: 1.5
+  ticks-per-level: 40
+  amplifier-per-level: 1

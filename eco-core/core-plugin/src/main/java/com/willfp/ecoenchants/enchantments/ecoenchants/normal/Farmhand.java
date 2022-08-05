@@ -37,6 +37,10 @@ public class Farmhand extends EcoEnchant {
             return;
         }
 
+        if (!this.areRequirementsMet(player)) {
+            return;
+        }
+
         if (!(event.getClickedBlock().getType().equals(Material.DIRT) || event.getClickedBlock().getType().equals(Material.GRASS_BLOCK))) {
             return;
         }
@@ -71,8 +75,7 @@ public class Farmhand extends EcoEnchant {
         }
 
         if (!this.getConfig().getBool(EcoEnchants.CONFIG_LOCATION + "per-block-damage")) {
-
-            DurabilityUtils.damageItem(player, player.getInventory().getItemInMainHand(), 1, player.getInventory().getHeldItemSlot());
+            DurabilityUtils.damageItem(player, player.getInventory().getItemInMainHand(), 1);
         }
 
         for (Vector vec : vecs) {
@@ -94,7 +97,7 @@ public class Farmhand extends EcoEnchant {
             block.setType(Material.FARMLAND);
             if (this.getConfig().getBool(EcoEnchants.CONFIG_LOCATION + "per-block-damage")) {
 
-                DurabilityUtils.damageItem(player, player.getInventory().getItemInMainHand(), 1, player.getInventory().getHeldItemSlot());
+                DurabilityUtils.damageItem(player, player.getInventory().getItemInMainHand(), 1);
             }
         }
     }

@@ -29,6 +29,10 @@ public class Grit extends EcoEnchant {
             return;
         }
 
+        if (!this.areRequirementsMet(attacker)) {
+            return;
+        }
+
         if (!AntigriefManager.canInjure(attacker, player)) {
             return;
         }
@@ -49,7 +53,7 @@ public class Grit extends EcoEnchant {
 
         int damage = (int) Math.ceil(this.getConfig().getDouble(EcoEnchants.CONFIG_LOCATION + "damage-per-level") * totalGritPoints);
 
-        DurabilityUtils.damageItem(attacker, attacker.getInventory().getItemInMainHand(), damage, attacker.getInventory().getHeldItemSlot());
+        DurabilityUtils.damageItem(attacker, attacker.getInventory().getItemInMainHand(), damage);
     }
 
 }

@@ -5,6 +5,7 @@ import com.willfp.ecoenchants.enchantments.EcoEnchant;
 import com.willfp.ecoenchants.enchantments.meta.EnchantmentType;
 import com.willfp.ecoenchants.enchantments.util.EnchantChecks;
 import com.willfp.ecoenchants.enchantments.util.EnchantmentUtils;
+import com.willfp.ecoenchants.enchantments.util.WeakMetadata;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.WitherSkeleton;
@@ -37,6 +38,10 @@ public class Necrotic extends EcoEnchant {
 
         Player player = event.getEntity().getKiller();
 
+        if (!this.areRequirementsMet(player)) {
+            return;
+        }
+
         if (!EnchantChecks.mainhand(player, this)) {
             return;
         }
@@ -48,6 +53,10 @@ public class Necrotic extends EcoEnchant {
         int level = EnchantChecks.getMainhandLevel(player, this);
 
         if (!EnchantmentUtils.passedChance(this, level)) {
+            return;
+        }
+
+        if (WeakMetadata.SUMMONED_ENTITY_MEMORY.containsKey(event.getEntity())) {
             return;
         }
 

@@ -27,37 +27,31 @@ public class Prosperity extends EcoEnchant {
     public void onArmorEquip(@NotNull final ArmorChangeEvent event) {
         Player player = event.getPlayer();
 
-        this.getPlugin().getScheduler().runLater(() -> {
-            int points = EnchantChecks.getArmorPoints(player, this);
+        if (!this.areRequirementsMet(player)) {
+            return;
+        }
 
-            AttributeInstance inst = player.getAttribute(Attribute.GENERIC_MAX_HEALTH);
+        int points = EnchantChecks.getArmorPoints(player, this);
 
-            assert inst != null;
+        AttributeInstance inst = player.getAttribute(Attribute.GENERIC_MAX_HEALTH);
 
-            inst.setBaseValue(inst.getDefaultValue());
+        assert inst != null;
 
-            if (this.getDisabledWorlds().contains(player.getWorld())) {
-                points = 0;
-            }
+        if (this.getDisabledWorlds().contains(player.getWorld())) {
+            points = 0;
+        }
 
-            inst.removeModifier(modifier);
+        inst.removeModifier(modifier);
 
-            if (player.getHealth() >= inst.getValue()) {
-                this.getPlugin().getScheduler().runLater(() -> {
-                    player.setHealth(player.getAttribute(Attribute.GENERIC_MAX_HEALTH).getValue());
-                }, 1);
-            }
-
-            if (points > 0) {
-                inst.addModifier(
-                        new AttributeModifier(
-                                UUID.nameUUIDFromBytes("prosperity".getBytes()),
-                                this.getKey().getKey(),
-                                this.getConfig().getInt(EcoEnchants.CONFIG_LOCATION + "health-per-point") * points,
-                                AttributeModifier.Operation.ADD_NUMBER
-                        )
-                );
-            }
-        }, 1);
+        if (points > 0) {
+            inst.addModifier(
+                    new AttributeModifier(
+                            UUID.nameUUIDFromBytes("prosperity".getBytes()),
+                            this.getKey().getKey(),
+                            this.getConfig().getInt(EcoEnchants.CONFIG_LOCATION + "health-per-point") * points,
+                            AttributeModifier.Operation.ADD_NUMBER
+                    )
+            );
+        }
     }
 }

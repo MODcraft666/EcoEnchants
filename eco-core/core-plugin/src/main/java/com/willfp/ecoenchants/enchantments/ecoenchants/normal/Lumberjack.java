@@ -6,17 +6,11 @@ import com.willfp.eco.util.BlockUtils;
 import com.willfp.ecoenchants.enchantments.EcoEnchant;
 import com.willfp.ecoenchants.enchantments.EcoEnchants;
 import com.willfp.ecoenchants.enchantments.meta.EnchantmentType;
-import org.bukkit.Bukkit;
-import org.bukkit.GameMode;
+import com.willfp.ecoenchants.enchantments.util.EnchantmentUtils;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
 import org.bukkit.event.block.BlockBreakEvent;
-import org.bukkit.event.player.PlayerItemBreakEvent;
-import org.bukkit.event.player.PlayerItemDamageEvent;
-import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.meta.Damageable;
-import org.bukkit.inventory.meta.ItemMeta;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
@@ -24,10 +18,23 @@ import java.util.List;
 import java.util.Set;
 
 public class Lumberjack extends EcoEnchant {
+    private List<Material> materials;
+
     public Lumberjack() {
         super(
                 "lumberjack", EnchantmentType.NORMAL
         );
+    }
+
+    @Override
+    protected void postUpdate() {
+        materials = new ArrayList<>();
+        for (String string : this.getConfig().getStrings(EcoEnchants.CONFIG_LOCATION + "whitelisted-blocks")) {
+            Material match = Material.getMaterial(string.toUpperCase());
+            if (match != null) {
+                materials.add(match);
+            }
+        }
     }
 
     @Override
@@ -43,9 +50,6 @@ public class Lumberjack extends EcoEnchant {
             return;
         }
 
-        List<Material> materials = new ArrayList<>();
-        this.getConfig().getStrings(EcoEnchants.CONFIG_LOCATION + "whitelisted-blocks").forEach(name -> materials.add(Material.getMaterial(name.toUpperCase())));
-
         if (!materials.contains(block.getType())) {
             return;
         }
@@ -54,47 +58,10 @@ public class Lumberjack extends EcoEnchant {
         int limit = level * blocksPerLevel;
 
         Set<Block> treeBlocks = BlockUtils.getVein(block, materials, limit);
+        treeBlocks.removeIf(block1 -> !AntigriefManager.canBreakBlock(player, block1));
 
         AnticheatManager.exemptPlayer(player);
-
-        ItemStack itemStack = player.getInventory().getItemInMainHand();
-        ItemMeta beforeMeta = itemStack.getItemMeta();
-        assert beforeMeta != null;
-        boolean hadUnbreak = beforeMeta.isUnbreakable() || player.getGameMode() == GameMode.CREATIVE;
-        beforeMeta.setUnbreakable(true);
-        itemStack.setItemMeta(beforeMeta);
-        int blocks = treeBlocks.size();
-
-        for (Block treeBlock : treeBlocks) {
-            treeBlock.setMetadata("block-ignore", this.getPlugin().getMetadataValueFactory().create(true));
-            if (!AntigriefManager.canBreakBlock(player, treeBlock)) {
-                continue;
-            }
-
-            BlockUtils.breakBlock(player, treeBlock);
-
-            this.getPlugin().getScheduler().runLater(() -> treeBlock.removeMetadata("block-ignore", this.getPlugin()), 1);
-        }
-
-        ItemMeta afterMeta = itemStack.getItemMeta();
-        assert afterMeta != null;
-        afterMeta.setUnbreakable(hadUnbreak);
-        itemStack.setItemMeta(afterMeta);
-        PlayerItemDamageEvent mockEvent = new PlayerItemDamageEvent(player, itemStack, blocks);
-        Bukkit.getPluginManager().callEvent(mockEvent);
-
-        if (!hadUnbreak) {
-            ItemMeta wayAfterMeta = itemStack.getItemMeta();
-            assert wayAfterMeta != null;
-            ((Damageable) wayAfterMeta).setDamage(((Damageable) wayAfterMeta).getDamage() + mockEvent.getDamage());
-            itemStack.setItemMeta(wayAfterMeta);
-            if (((Damageable) wayAfterMeta).getDamage() >= itemStack.getType().getMaxDurability()) {
-                PlayerItemBreakEvent breakEvent = new PlayerItemBreakEvent(player, itemStack);
-                Bukkit.getPluginManager().callEvent(breakEvent);
-                itemStack.setAmount(0);
-            }
-        }
-
+        EnchantmentUtils.rehandleBreaking(player, treeBlocks, this.getPlugin());
         AnticheatManager.unexemptPlayer(player);
     }
 }

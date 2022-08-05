@@ -1,8 +1,8 @@
 package com.willfp.ecoenchants.enchantments.itemtypes;
 
 import com.willfp.eco.core.Prerequisite;
-import com.willfp.eco.core.integrations.placeholder.PlaceholderEntry;
 import com.willfp.eco.core.integrations.placeholder.PlaceholderManager;
+import com.willfp.eco.core.placeholder.PlayerPlaceholder;
 import com.willfp.eco.util.StringUtils;
 import com.willfp.ecoenchants.display.EnchantmentCache;
 import com.willfp.ecoenchants.enchantments.EcoEnchant;
@@ -37,6 +37,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
+@SuppressWarnings("deprecation")
 public abstract class Spell extends EcoEnchant {
     /**
      * Items that must be left-clicked to activate spells for.
@@ -74,7 +75,8 @@ public abstract class Spell extends EcoEnchant {
             Material.BLAST_FURNACE,
             Material.BREWING_STAND,
             Material.DISPENSER,
-            Material.DROPPER
+            Material.DROPPER,
+            Material.FIRE
     ));
 
     static {
@@ -107,9 +109,10 @@ public abstract class Spell extends EcoEnchant {
         super(key, EnchantmentType.SPELL, prerequisites);
 
         PlaceholderManager.registerPlaceholder(
-                new PlaceholderEntry(
+                new PlayerPlaceholder(
+                        this.getPlugin(),
                         this.getPermissionName() + "_" + "cooldown",
-                        player -> StringUtils.internalToString(getCooldown(this, player))
+                        player -> StringUtils.toNiceString(getCooldown(this, player))
                 )
         );
     }
@@ -252,17 +255,25 @@ public abstract class Spell extends EcoEnchant {
             }
         }
 
+        if (!this.areRequirementsMet(player)) {
+            return;
+        }
+
         if (cooldown > 0) {
             if (!this.hasFlag("no-cooldown-message")) {
                 if (this.getPlugin().getConfigYml().getBool("types.special.cooldown-in-actionbar")) {
-                    String message = this.getPlugin().getLangYml().getString("messages.on-cooldown").replace("%seconds%", String.valueOf(cooldown)).replace("%name%", EnchantmentCache.getEntry(this).getRawName());
+                    String message = this.getPlugin().getLangYml().getFormattedString("messages.on-cooldown")
+                            .replace("%seconds%", String.valueOf(cooldown))
+                            .replace("%name%", EnchantmentCache.getEntry(this).getRawName());
 
                     player.spigot().sendMessage(
                             ChatMessageType.ACTION_BAR,
                             TextComponent.fromLegacyText(message)
                     );
                 } else {
-                    String message = this.getPlugin().getLangYml().getMessage("on-cooldown").replace("%seconds%", String.valueOf(cooldown)).replace("%name%", EnchantmentCache.getEntry(this).getRawName());
+                    String message = this.getPlugin().getLangYml().getMessage("on-cooldown")
+                            .replace("%seconds%", String.valueOf(cooldown))
+                            .replace("%name%", EnchantmentCache.getEntry(this).getRawName());
                     player.sendMessage(message);
                 }
                 player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BLOCK_BASS, 1, 0.5f);

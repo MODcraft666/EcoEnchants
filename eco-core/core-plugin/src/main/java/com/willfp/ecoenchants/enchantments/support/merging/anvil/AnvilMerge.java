@@ -22,6 +22,7 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
+@SuppressWarnings("deprecation")
 @UtilityClass
 public class AnvilMerge {
     /**
@@ -129,8 +130,8 @@ public class AnvilMerge {
 
         Map<Enchantment, Integer> outEnchants = new HashMap<>();
 
-        HashMap<Enchantment, Integer> leftEnchants = new HashMap<>(FastItemStack.wrap(left).getEnchantmentsOnItem(true));
-        HashMap<Enchantment, Integer> rightEnchants = new HashMap<>(FastItemStack.wrap(right).getEnchantmentsOnItem(true));
+        HashMap<Enchantment, Integer> leftEnchants = new HashMap<>(FastItemStack.wrap(left).getEnchants(true));
+        HashMap<Enchantment, Integer> rightEnchants = new HashMap<>(FastItemStack.wrap(right).getEnchants(true));
 
         leftEnchants.forEach(((enchantment, integer) -> {
             int level = integer;

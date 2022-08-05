@@ -19,7 +19,11 @@ general-config:
     - crossbow
   grindstoneable: true
   disabled-in-worlds: [ ]
-  conflicts: [ ]
+  requirements:
+    list: []
+    not-met-lore: []
+  conflicts:
+    - dousing
   maximum-level: 8
 
 config:

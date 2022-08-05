@@ -1,7 +1,9 @@
 package com.willfp.ecoenchants.config.configs;
 
 import com.willfp.eco.core.EcoPlugin;
-import com.willfp.eco.core.config.yaml.YamlExtendableConfig;
+import com.willfp.eco.core.config.interfaces.Config;
+import com.willfp.eco.core.config.interfaces.LoadableConfig;
+import com.willfp.eco.core.config.wrapper.ConfigWrapper;
 import com.willfp.ecoenchants.enchantments.EcoEnchant;
 import com.willfp.ecoenchants.enchantments.EcoEnchants;
 import com.willfp.ecoenchants.enchantments.meta.EnchantmentRarity;
@@ -17,7 +19,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-public class EnchantmentConfig extends YamlExtendableConfig {
+public class EnchantmentConfig extends ConfigWrapper<Config> {
     /**
      * The name of the config.
      */
@@ -39,15 +41,16 @@ public class EnchantmentConfig extends YamlExtendableConfig {
     /**
      * Instantiate a new config for an enchantment.
      *
-     * @param name    The name of the config.
-     * @param plugin  The provider of the enchantment.
-     * @param enchant The enchantment.
+     * @param handle  The handle.
+     * @param name    The config name.
+     * @param enchant The enchant.
+     * @param plugin  Instance of EcoEnchants.
      */
-    public EnchantmentConfig(@NotNull final String name,
-                             @NotNull final Class<?> source,
+    public EnchantmentConfig(@NotNull final Config handle,
+                             @NotNull final String name,
                              @NotNull final EcoEnchant enchant,
                              @NotNull final EcoPlugin plugin) {
-        super(name, true, plugin, source, "enchants/" + enchant.getType().getName() + "/");
+        super(handle);
         this.name = name;
         this.enchant = enchant;
         this.plugin = plugin;
@@ -63,7 +66,9 @@ public class EnchantmentConfig extends YamlExtendableConfig {
         Set<Enchantment> enchantments = new HashSet<>();
         List<String> enchantmentKeys = this.getStrings(path);
         for (String key : enchantmentKeys) {
-            enchantments.add(Enchantment.getByKey(NamespacedKey.minecraft(key)));
+            if (Enchantment.getByKey(NamespacedKey.minecraft(key)) != null) {
+                enchantments.add(Enchantment.getByKey(NamespacedKey.minecraft(key)));
+            }
         }
         return enchantments;
     }
@@ -117,7 +122,19 @@ public class EnchantmentConfig extends YamlExtendableConfig {
         try {
             this.save();
             this.getPlugin().getLangYml().save();
-            this.getPlugin().getLangYml().clearCache();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * Save if savable config.
+     */
+    public void save() {
+        try {
+            if (this.getHandle() instanceof LoadableConfig loadableConfig) {
+                loadableConfig.save();
+            }
         } catch (IOException e) {
             e.printStackTrace();
         }

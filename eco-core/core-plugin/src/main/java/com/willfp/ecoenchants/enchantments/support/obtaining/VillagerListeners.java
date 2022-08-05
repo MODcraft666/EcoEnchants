@@ -2,6 +2,7 @@ package com.willfp.ecoenchants.enchantments.support.obtaining;
 
 import com.willfp.eco.core.EcoPlugin;
 import com.willfp.eco.core.PluginDependent;
+import com.willfp.eco.core.fast.FastItemStack;
 import com.willfp.eco.util.NumberUtils;
 import com.willfp.ecoenchants.enchantments.EcoEnchant;
 import com.willfp.ecoenchants.enchantments.EcoEnchants;
@@ -11,6 +12,7 @@ import org.bukkit.Color;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.Particle;
+import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Entity;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -26,6 +28,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public class VillagerListeners extends PluginDependent<EcoPlugin> implements Listener {
@@ -73,7 +76,7 @@ public class VillagerListeners extends PluginDependent<EcoPlugin> implements Lis
         EcoEnchant applied = null;
 
         for (EcoEnchant enchantment : enchantments) {
-            if (NumberUtils.randFloat(0, 1) > enchantment.getRarity().getVillagerProbability() * multiplier) {
+            if (NumberUtils.randFloat(0, 1) > enchantment.getEnchantmentRarity().getVillagerProbability() * multiplier) {
                 continue;
             }
 
@@ -164,10 +167,12 @@ public class VillagerListeners extends PluginDependent<EcoPlugin> implements Lis
 
         Map<EcoEnchant, Integer> toAdd = new HashMap<>();
 
+        Set<Enchantment> onItem = FastItemStack.wrap(result).getEnchants(false).keySet();
+
         double multiplier = 0.01;
 
         for (EcoEnchant enchantment : enchantments) {
-            if (NumberUtils.randFloat(0, 1) > enchantment.getRarity().getVillagerProbability() * multiplier) {
+            if (NumberUtils.randFloat(0, 1) > enchantment.getEnchantmentRarity().getVillagerProbability() * multiplier) {
                 continue;
             }
 
@@ -201,6 +206,19 @@ public class VillagerListeners extends PluginDependent<EcoPlugin> implements Lis
                     anyConflicts.set(true);
                 }
             });
+            for (Enchantment enchant : onItem) {
+                if (enchantment.conflictsWithAny(onItem)) {
+                    anyConflicts.set(true);
+                }
+
+                if (enchant.conflictsWith(enchantment)) {
+                    anyConflicts.set(true);
+                }
+
+                if (enchantment.conflictsWith(enchant)) {
+                    anyConflicts.set(true);
+                }
+            }
 
             if (anyConflicts.get()) {
                 continue;

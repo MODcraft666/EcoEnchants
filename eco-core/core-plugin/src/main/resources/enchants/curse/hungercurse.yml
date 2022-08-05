@@ -18,8 +18,11 @@ general-config:
     - helmet
   grindstoneable: false
   disabled-in-worlds: [ ]
+  requirements:
+    list: []
+    not-met-lore: []
   conflicts:
     - sating
 
 config:
-# No config is available for this enchantment
+  times-more-hunger: 2

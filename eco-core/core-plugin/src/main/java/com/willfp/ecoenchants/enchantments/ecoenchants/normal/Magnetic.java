@@ -51,7 +51,9 @@ public class Magnetic extends EcoEnchant implements TimedRunnable {
         this.getPlugin().getScheduler().runLater(() -> this.getPlugin().getServer().getOnlinePlayers().forEach(player -> {
             int level = EnchantChecks.getArmorPoints(player, this, 0);
             if (level > 0) {
-                players.put(player, level);
+                if (this.areRequirementsMet(player)) {
+                    players.put(player, level);
+                }
             }
         }), 1);
         initialDistance = EcoEnchants.MAGNETIC.getConfig().getDouble(EcoEnchants.CONFIG_LOCATION + "initial-distance");
@@ -66,6 +68,12 @@ public class Magnetic extends EcoEnchant implements TimedRunnable {
                 return;
             }
 
+            if (this.getConfig().getBool(EcoEnchants.CONFIG_LOCATION + "disable-while-sneaking")) {
+                if (player.isSneaking()) {
+                    return;
+                }
+            }
+
             for (Entity e : player.getWorld().getNearbyEntities(player.getLocation(), distance, 2.0d, distance)) {
                 if (!(e instanceof Item || e instanceof ExperienceOrb)) {
                     continue;
@@ -74,6 +82,7 @@ public class Magnetic extends EcoEnchant implements TimedRunnable {
                 if (e instanceof Item && ((Item) e).getPickupDelay() > 0) {
                     continue;
                 }
+
 
                 Vector vector = player.getLocation().toVector().subtract(e.getLocation().toVector()).normalize().multiply(0.1 * level);
 

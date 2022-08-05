@@ -100,22 +100,28 @@ public abstract class Artifact extends EcoEnchant {
             return;
         }
 
+        if (!this.areRequirementsMet(player)) {
+            return;
+        }
+
         if (!EnchantChecks.chestplate(player, this)) {
             return;
         }
 
-        Vector point1 = player.getLocation().getDirection().clone();
-        point1.rotateAroundY(Math.toRadians(90));
-        point1.multiply(1.2);
-        Location location1 = player.getLocation().clone().add(point1);
+        this.getPlugin().getScheduler().runAsync(() -> {
+            Vector point1 = player.getLocation().getDirection().clone();
+            point1.rotateAroundY(Math.toRadians(90));
+            point1.multiply(1.2);
+            Location location1 = player.getLocation().clone().add(point1);
 
-        Vector point2 = player.getLocation().getDirection().clone();
-        point2.rotateAroundY(Math.toRadians(-90));
-        point2.multiply(1.2);
-        Location location2 = player.getLocation().clone().add(point2);
+            Vector point2 = player.getLocation().getDirection().clone();
+            point2.rotateAroundY(Math.toRadians(-90));
+            point2.multiply(1.2);
+            Location location2 = player.getLocation().clone().add(point2);
 
-        player.getWorld().spawnParticle(particle, location1, 1, 0, 0, 0, 0, extra, true);
-        player.getWorld().spawnParticle(particle, location2, 1, 0, 0, 0, 0, extra, true);
+            player.getWorld().spawnParticle(particle, location1, 1, 0, 0, 0, 0, extra, true);
+            player.getWorld().spawnParticle(particle, location2, 1, 0, 0, 0, 0, extra, true);
+        });
     }
 
     @Override
@@ -151,7 +157,7 @@ public abstract class Artifact extends EcoEnchant {
                     victim.getWorld().spawnParticle(particle, particleLocation2, 1, 0, 0, 0, 0, extra, false);
                 }
             }
-        }).runTaskTimer(0, 1);
+        }).runTaskTimerAsynchronously(0, 1);
     }
 
     @Override
@@ -174,6 +180,6 @@ public abstract class Artifact extends EcoEnchant {
                 bukkitRunnable.cancel();
             }
             projectile.getLocation().getWorld().spawnParticle(particle, projectile.getLocation(), 1, 0, 0, 0, finalColor, extra, true);
-        }).runTaskTimer(4, ticks);
+        }).runTaskTimerAsynchronously(4, ticks);
     }
 }
